@@ -6,6 +6,7 @@ import { AdminLayout } from '@/admin/layout/AdminLayout';
 import { AdminBlogs } from '@/admin/blogs/AdminBlogs';
 import { AdminMembers } from '@/admin/members/AdminMembers';
 import { AdminLogin } from '@/admin/auth/AdminLogin';
+import { SystemMaintenance } from '@/admin/auth/SystemMaintenance';
 
 export const Route = createFileRoute('/admincontrol108')({
   component: AdminDashboard
@@ -16,23 +17,28 @@ function AdminDashboard() {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('blogs');
+  const [isBlocked, setIsBlocked] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        // Enforce suspension check
+        // Enforce suspension and deletion checks
         const { getMembers } = await import('@/lib/firebase-db');
         const membersList = await getMembers();
         const profile = membersList.find(m => m.email === currentUser.email);
         
-        if (profile && profile.status === 'suspended') {
+        const isFirstRun = membersList.length === 0;
+        const isDeleted = !profile && !isFirstRun;
+        const isSuspended = profile?.status === 'suspended';
+
+        if (isDeleted || isSuspended) {
           await signOut(auth);
-          alert("Your account has been suspended by the Admin.");
+          setIsBlocked(true);
           setUser(null);
           setUserProfile(null);
         } else {
           setUser(currentUser);
-          setUserProfile(profile || { role: 'Admin' }); // Fallback for the first auto-heal load
+          setUserProfile(profile || { role: 'Admin' }); 
         }
       } else {
         setUser(null);
@@ -44,6 +50,10 @@ function AdminDashboard() {
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
+  }
+
+  if (isBlocked) {
+    return <SystemMaintenance />;
   }
 
   if (!user) {
