@@ -42,8 +42,8 @@ function Article(){
   return <article className="site-container article-detail">
     <div className="article-title">
       <span className="eyebrow">{article.category}</span>
-      <h1>{article.title}</h1>
-      <div className="article-byline flex items-center gap-4">
+      <h1 className="text-3xl sm:text-4xl md:text-5xl font-medium my-4 sm:my-6 leading-tight">{article.title}</h1>
+      <div className="article-byline flex flex-wrap items-center gap-y-3 gap-x-4">
         <span>By {authorsList.map((a: any) => a.name).join(', ')}</span>
         <button onClick={(e) => handleShare(e, article.title, article.slug)} className="flex items-center gap-1.5 text-primary bg-primary/10 hover:bg-primary/20 px-3 py-1.5 rounded-full transition-colors font-bold text-[10px] uppercase tracking-wider ml-2">
           <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
@@ -54,9 +54,9 @@ function Article(){
     <img className="article-cover" src={article.image} alt={article.title} width={1200} height={800}/>
     
     {article.summary && (
-      <div className="article-prose !mb-10">
-        <div className="bg-muted border border-border/60 p-8 sm:p-10 rounded-2xl shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
+      <div className="article-prose !mb-8 sm:!mb-10">
+        <div className="bg-muted border border-border/60 p-6 sm:p-10 rounded-2xl shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1.5 sm:w-2 h-full bg-primary" />
           <h3 className="text-primary font-bold text-sm tracking-widest uppercase mb-4">Abstract</h3>
           <p className="text-foreground/90 font-medium leading-relaxed sm:text-lg">
             {article.summary}
