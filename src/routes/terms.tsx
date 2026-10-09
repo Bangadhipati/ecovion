@@ -14,14 +14,14 @@ function Terms() {
         className="absolute inset-0 pointer-events-none opacity-[0.08] bg-center bg-fixed bg-no-repeat z-[-1] block md:hidden"
         style={{
           backgroundImage: 'url("/ECOVION%20square%20Logo.png")',
-          backgroundSize: '400px'
+          backgroundSize: 'min(400px, 80vw)'
         }}
       />
       <div 
         className="absolute inset-0 pointer-events-none opacity-[0.08] bg-center bg-fixed bg-no-repeat z-[-1] hidden md:block"
         style={{
           backgroundImage: 'url("/Ecovion%20horizontal%20Logo.png")',
-          backgroundSize: '700px'
+          backgroundSize: 'min(700px, 80vw)'
         }}
       />
       <PageIntro eyebrow="LEGAL" title="Terms & Conditions" description="Terms of use for the Ecovion website." />
