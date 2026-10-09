@@ -33,7 +33,24 @@ export function AdminMembers() {
 
   const fetchMembers = async () => {
     setIsLoading(true);
-    const data = await getMembers();
+    let data = await getMembers();
+    
+    // Auto-heal: If the current logged-in admin is not in the database, add them
+    const currentUser = getAuth().currentUser;
+    if (currentUser && currentUser.email) {
+      const adminExists = data.some(m => m.email === currentUser.email);
+      if (!adminExists) {
+        await createMember({
+          name: currentUser.displayName || 'Super Admin',
+          email: currentUser.email,
+          role: 'Super Admin',
+          createdAt: new Date().toISOString()
+        });
+        // Refetch after auto-adding
+        data = await getMembers();
+      }
+    }
+    
     setMembers(data);
     setIsLoading(false);
   };
