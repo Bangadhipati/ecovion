@@ -147,25 +147,19 @@
 /* Hide Google Translate UI */
 #google_translate_element, .skiptranslate iframe, .goog-te-banner-frame { display: none !important; }
 
-/* Global Professional Scrollbar */
-::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
 }
-::-webkit-scrollbar-track {
-  background: #f8fafc; /* Subtle light gray track */
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
 }
-::-webkit-scrollbar-thumb {
-  background-color: rgba(18, 53, 36, 0.25); /* Ecovion green with opacity */
-  border-radius: 100px;
-  border: 3px solid #f8fafc; /* Creates floating pill effect */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 10px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background-color: rgba(18, 53, 36, 0.55);
-}
-* {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(18, 53, 36, 0.4) #f8fafc;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-muted-foreground);
 }
 
 /* Ecovion semantic palette */
