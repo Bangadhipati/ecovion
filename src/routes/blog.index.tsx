@@ -17,22 +17,29 @@ function Blog() {
   const [filter, setFilter] = useState('All stories');
   const [query, setQuery] = useState('');
   
-  const visible = articles.filter((a: any) => 
+  // Sort by date (newest first)
+  const sortedArticles = [...articles].sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  
+  // Find the explicitly featured article, or default to the latest one
+  const featuredStory = sortedArticles.find((a: any) => a.isFeatured) || sortedArticles[0];
+  
+  const visible = sortedArticles.filter((a: any) => 
     (filter === 'All stories' || a.category === filter) && 
-    `${a.title} ${a.intro || ''}`.toLowerCase().includes(query.toLowerCase())
+    `${a.title} ${a.summary || ''}`.toLowerCase().includes(query.toLowerCase())
   );
   
   return <>
     <PageIntro eyebrow="THE ECOVION JOURNAL" title="Ideas for a greener tomorrow." description="Notes from the intersection of material science, sustainable agriculture, and possibility."/>
     <section className="site-container blog-section">
-      {articles.length > 0 && (
-        <Link to="/blog/$slug" params={{slug:articles[0].slug}} className="featured-story">
-          <img src={articles[0].image} alt="Featured article image" width={1024} height={1024}/>
+      {featuredStory && (
+        <Link to="/blog/$slug" params={{slug:featuredStory.slug}} className="featured-story">
+          <img src={featuredStory.image} alt="Featured article image" width={1024} height={1024}/>
           <div>
-            <span className="eyebrow">FEATURED STORY · {articles[0].category.toUpperCase()}</span>
-            <h2>{articles[0].title}</h2>
+            <span className="eyebrow">FEATURED STORY · {featuredStory.category.toUpperCase()}</span>
+            <h2>{featuredStory.title}</h2>
+            <p>{featuredStory.summary && featuredStory.summary.substring(0, 150) + (featuredStory.summary.length > 150 ? '...' : '')}</p>
             <span className="text-link">Read the story <ArrowUpRight size={19}/></span>
-            <small>By {articles[0].authors ? articles[0].authors.map((x:any)=>x.name).join(', ') : articles[0].author}</small>
+            <small>By {featuredStory.authors ? featuredStory.authors.map((x:any)=>x.name).join(', ') : featuredStory.author}</small>
           </div>
         </Link>
       )}
@@ -57,6 +64,7 @@ function Blog() {
               <span>By {a.authors ? a.authors.map((x:any)=>x.name).join(', ') : a.author}</span>
             </div>
             <h3>{a.title}</h3>
+            {a.summary && <p className="text-muted-foreground text-[11px] mt-2 line-clamp-3 leading-relaxed">{a.summary}</p>}
             <span className="read-story">Read story <MoveRight size={17}/></span>
           </Link>
         ))}

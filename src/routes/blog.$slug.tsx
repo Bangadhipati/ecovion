@@ -32,6 +32,19 @@ function Article(){
       <span className="article-byline">By {authorsList.map((a: any) => a.name).join(', ')}</span>
     </div>
     <img className="article-cover" src={article.image} alt={article.title} width={1200} height={800}/>
+    
+    {article.summary && (
+      <div className="article-prose !mb-10">
+        <div className="bg-muted border border-border/60 p-8 sm:p-10 rounded-2xl shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-2 h-full bg-primary" />
+          <h3 className="text-primary font-bold text-sm tracking-widest uppercase mb-4">Abstract</h3>
+          <p className="text-foreground/90 font-medium leading-relaxed sm:text-lg">
+            {article.summary}
+          </p>
+        </div>
+      </div>
+    )}
+
     <div className="article-prose">
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}

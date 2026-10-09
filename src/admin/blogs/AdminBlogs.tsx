@@ -92,17 +92,29 @@ export function AdminBlogs() {
 
     const blogData = {
       title,
-      slug,
+      slug: target.blogSlug.value || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, ''),
       category: target.blogCategory.value,
-      image: editingBlog?.image || '', // Managed by a separate state if we want to preview, but let's just grab the input value
+      summary: target.blogSummary.value,
+      image: editingBlog?.image || '', 
       paragraphs: target.blogContent.value.split('\n\n').filter((p: string) => p.trim() !== ''),
-      authors: authors
+      authors: authors,
+      isFeatured: target.isFeatured ? target.isFeatured.checked : false,
+      createdAt: editingBlog?.createdAt || new Date().toISOString()
     };
     
     // We need to properly read the image input value
     const imageInput = document.getElementById('blog-image-input') as HTMLInputElement;
     if(imageInput) {
       blogData.image = imageInput.value;
+    }
+
+    if (blogData.isFeatured) {
+      // Unfeature all other blogs
+      for (const b of blogs) {
+        if (b.isFeatured && b.id !== editingBlog?.id) {
+          await updateBlog(b.id, { isFeatured: false });
+        }
+      }
     }
 
     if (editingBlog && editingBlog.id) {
@@ -151,7 +163,10 @@ export function AdminBlogs() {
                   <td className="p-4 px-6 font-medium">
                     <div className="flex items-center gap-3">
                       <img src={b.image} className="w-10 h-10 rounded object-cover border border-border shrink-0" />
-                      <span className="max-w-[200px] md:max-w-[300px] truncate block">{b.title}</span>
+                      <div>
+                        <span className="max-w-[200px] md:max-w-[300px] truncate block">{b.title}</span>
+                        {b.isFeatured && <span className="text-[10px] text-primary font-bold uppercase tracking-wider">★ Featured</span>}
+                      </div>
                     </div>
                   </td>
                   <td className="p-4 px-6 text-muted-foreground">
@@ -185,12 +200,38 @@ export function AdminBlogs() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">Title</label>
-                <input name="blogTitle" type="text" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" defaultValue={editingBlog?.title} required placeholder="Article title" />
+                <input name="blogTitle" type="text" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" defaultValue={editingBlog?.title} onChange={(e) => {
+                  const slugInput = document.getElementById('blog-slug-input') as HTMLInputElement;
+                  // Only auto-update if we are creating a new blog or the user hasn't explicitly customized the slug
+                  if (slugInput && !editingBlog) {
+                    slugInput.value = e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                  }
+                }} required placeholder="Article title" />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">Category</label>
                 <input name="blogCategory" type="text" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" defaultValue={editingBlog?.category} required placeholder="e.g. Sustainable agriculture" />
               </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Custom Permalink (Slug)</label>
+              <div className="flex items-center">
+                <span className="bg-muted px-3 py-2 border border-r-0 border-input rounded-l-md text-sm text-muted-foreground shrink-0">ecovion.com/blog/</span>
+                <input id="blog-slug-input" name="blogSlug" type="text" className="flex h-10 w-full rounded-r-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" defaultValue={editingBlog?.slug} required placeholder="custom-article-slug" />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium">Summary / Abstract</label>
+              <textarea name="blogSummary" className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2" defaultValue={editingBlog?.summary} required placeholder="A short, compelling summary of the article..." />
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <input type="checkbox" id="isFeatured" name="isFeatured" defaultChecked={editingBlog?.isFeatured} className="w-4 h-4 rounded border-input text-primary focus:ring-primary" />
+              <label htmlFor="isFeatured" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                Mark as Featured Article
+              </label>
             </div>
 
             <div className="flex flex-col gap-2">
