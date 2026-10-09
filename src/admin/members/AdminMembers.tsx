@@ -82,7 +82,21 @@ export function AdminMembers() {
     setIsDialogOpen(true);
   };
 
+  const checkLastAdmin = (targetEmail: string) => {
+    const currentUser = getAuth().currentUser;
+    if (currentUser?.email !== targetEmail) return true; // It's not themselves, proceed
+
+    const activeAdmins = members.filter(m => m.role === 'Admin' && m.status !== 'suspended');
+    if (activeAdmins.length <= 1) {
+      alert("Action blocked: You are the only active Admin left. You cannot suspend or delete yourself.");
+      return false;
+    }
+    return true;
+  };
+
   const toggleSuspend = async (member: any) => {
+    if (member.status !== 'suspended' && !checkLastAdmin(member.email)) return;
+    
     const newStatus = member.status === 'suspended' ? 'active' : 'suspended';
     await updateMember(member.id, { status: newStatus });
     fetchMembers();
@@ -100,6 +114,10 @@ export function AdminMembers() {
     try {
       if (editingMember) {
         // Edit flow
+        // Check if they are demoting themselves from Admin to Editor
+        if (role !== 'Admin' && editingMember.role === 'Admin') {
+          if (!checkLastAdmin(editingMember.email)) return;
+        }
         await updateMember(editingMember.id, { name, role });
       } else {
         // Create flow
@@ -132,12 +150,17 @@ export function AdminMembers() {
     }
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (member: any) => {
+    if (!checkLastAdmin(member.email)) return;
+
     if(confirm("Remove this member? Note: You must also delete their account manually in the Firebase Authentication console to fully revoke access.")) {
-      await dbDeleteMember(id);
+      await dbDeleteMember(member.id);
       fetchMembers();
     }
   };
+
+  const activeAdminsCount = members.filter(m => m.role === 'Admin' && m.status !== 'suspended').length;
+  const currentUserEmail = getAuth().currentUser?.email;
 
   return (
     <>
@@ -165,35 +188,40 @@ export function AdminMembers() {
             <tbody className="divide-y divide-border">
               {isLoading ? (
                 <tr><td colSpan={4} className="p-12 text-center text-muted-foreground">Loading members...</td></tr>
-              ) : members.map(m => (
-                <tr key={m.id} className={`hover:bg-muted/30 transition-colors group ${m.status === 'suspended' ? 'opacity-50' : ''}`}>
-                  <td className="p-4 px-6 font-medium">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full ${m.status === 'suspended' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'} flex items-center justify-center font-bold shrink-0`}>
-                        {m.name.charAt(0).toUpperCase()}
+              ) : members.map(m => {
+                const isSelf = m.email === currentUserEmail;
+                const disableActions = isSelf && activeAdminsCount <= 1;
+
+                return (
+                  <tr key={m.id} className={`hover:bg-muted/30 transition-colors group ${m.status === 'suspended' ? 'opacity-50' : ''}`}>
+                    <td className="p-4 px-6 font-medium">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full ${m.status === 'suspended' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'} flex items-center justify-center font-bold shrink-0`}>
+                          {m.name.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="truncate">{m.name}</span>
                       </div>
-                      <span className="truncate">{m.name}</span>
-                    </div>
-                  </td>
-                  <td className="p-4 px-6 text-muted-foreground">{m.email}</td>
-                  <td className="p-4 px-6 text-muted-foreground">
-                    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded whitespace-nowrap ${m.status === 'suspended' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-primary'}`}>
-                      {m.status === 'suspended' ? 'Suspended' : (m.role || 'Admin')}
-                    </span>
-                  </td>
-                  <td className="p-4 px-6 flex gap-2 justify-end">
-                    <Button variant="outline" size="icon" className={`h-8 w-8 shrink-0 ${m.status === 'suspended' ? 'text-primary hover:bg-primary/10' : 'text-amber-600 hover:bg-amber-600/10'}`} onClick={() => toggleSuspend(m)} title={m.status === 'suspended' ? 'Unsuspend' : 'Suspend'}>
-                      {m.status === 'suspended' ? <CheckCircle size={14} /> : <Ban size={14} />}
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => openEditDialog(m)}>
-                      <Edit size={14} />
-                    </Button>
-                    <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0" onClick={() => handleDelete(m.id)}>
-                      <Trash2 size={14} />
-                    </Button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="p-4 px-6 text-muted-foreground">{m.email}</td>
+                    <td className="p-4 px-6 text-muted-foreground">
+                      <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded whitespace-nowrap ${m.status === 'suspended' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-primary'}`}>
+                        {m.status === 'suspended' ? 'Suspended' : (m.role || 'Admin')}
+                      </span>
+                    </td>
+                    <td className="p-4 px-6 flex gap-2 justify-end">
+                      <Button variant="outline" size="icon" disabled={disableActions} className={`h-8 w-8 shrink-0 ${m.status === 'suspended' ? 'text-primary hover:bg-primary/10' : 'text-amber-600 hover:bg-amber-600/10'}`} onClick={() => toggleSuspend(m)} title={disableActions ? "Cannot suspend the last admin" : (m.status === 'suspended' ? 'Unsuspend' : 'Suspend')}>
+                        {m.status === 'suspended' ? <CheckCircle size={14} /> : <Ban size={14} />}
+                      </Button>
+                      <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => openEditDialog(m)}>
+                        <Edit size={14} />
+                      </Button>
+                      <Button variant="outline" size="icon" disabled={disableActions} className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0" onClick={() => handleDelete(m)} title={disableActions ? "Cannot delete the last admin" : "Delete"}>
+                        <Trash2 size={14} />
+                      </Button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -232,10 +260,13 @@ export function AdminMembers() {
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Role</label>
-              <select name="memberRole" defaultValue={editingMember?.role || 'Admin'} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <select name="memberRole" defaultValue={editingMember?.role || 'Admin'} disabled={editingMember && editingMember.email === currentUserEmail && activeAdminsCount <= 1} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
                 <option value="Admin">Admin</option>
                 <option value="Editor">Editor</option>
               </select>
+              {editingMember && editingMember.email === currentUserEmail && activeAdminsCount <= 1 && (
+                <span className="text-xs text-muted-foreground mt-1">You cannot change your role because you are the only Admin left.</span>
+              )}
             </div>
 
             <DialogFooter className="mt-6">
