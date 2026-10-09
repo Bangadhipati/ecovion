@@ -1,0 +1,7 @@
+import { createFileRoute, Link } from '@tanstack/react-router';
+import { ArrowUpRight } from 'lucide-react';
+import { PageIntro, PartnerBand } from '@/components/site-shell';
+import { Button } from '@/components/ui/button';
+import { field, pageHead } from '@/lib/site-data';
+export const Route=createFileRoute('/for-farmers')({head:()=>pageHead('For farmers','Explore Ecovion’s work toward smarter agricultural input delivery and opportunities for field collaboration.'),component:Farmers});
+function Farmers(){return <><PageIntro eyebrow="FOR THE PEOPLE WHO GROW OUR FUTURE" title="Rooted in the realities of farming." description="Better agricultural innovation begins by listening to the people closest to the land."/><section className="site-container editorial-grid farmer-content"><img src={field} alt="Green crop rows on an Indian farm" width={1920} height={1024}/><div><span className="eyebrow">GROW WITH US</span><h2>Fewer losses.<br/>More possibilities.</h2><p>Rising input costs, nutrient leaching, and repeated applications are real challenges. We are developing material systems that rethink delivery, starting at the root zone.</p><p className="muted-copy">Our agriculture solutions are in development. We are progressing from pilot-scale validation toward field trials and commercialization, and welcome conversations with farmers and agricultural partners.</p><Button asChild><Link to="/contact">Discuss a field collaboration <ArrowUpRight/></Link></Button></div></section><PartnerBand/></>;}
