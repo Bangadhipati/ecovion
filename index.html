@@ -18,9 +18,45 @@
   <meta name="twitter:image" content="https://ecovion.vercel.app/ecovion-og-logo.jpg" />
   <link rel="icon" href="/favicon.png" type="image/png" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Syncopate:wght@400;700&display=swap" />
+  <style>
+    body {
+      background-color: #fafafa;
+      margin: 0;
+      font-family: 'DM Sans', sans-serif;
+    }
+    #root:empty {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #3b423f; /* Dark text */
+    }
+    .loading-indicator {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      opacity: 0.7;
+    }
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgba(0,0,0,0.1);
+      border-top-color: #3b423f;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div class="loading-indicator">
+      <div class="spinner"></div>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
   <div id="google_translate_element" style="display: none;"></div>
   <script type="text/javascript">
