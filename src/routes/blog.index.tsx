@@ -63,10 +63,7 @@ function Blog() {
           </button>
         </div>
       )}
-      <div className="filter-bar">
-        <div className="filter-options">
-          {['All stories','Sustainable agriculture','Material science'].map(f=><Button key={f} variant={filter===f?'default':'ghost'} onClick={()=>setFilter(f)} aria-pressed={filter===f}>{f}</Button>)}
-        </div>
+      <div className="filter-bar" style={{ justifyContent: 'flex-end' }}>
         <label className="search-input">
           <Search size={17}/>
           <input aria-label="Search stories" placeholder="Search stories" value={query} onChange={e=>setQuery(e.target.value)}/>
