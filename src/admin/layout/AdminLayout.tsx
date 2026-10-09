@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-export function AdminLayout({ children, activeTab, setActiveTab }: { children: React.ReactNode, activeTab: string, setActiveTab: (t: string) => void }) {
+export function AdminLayout({ children, activeTab, setActiveTab, userRole }: { children: React.ReactNode, activeTab: string, setActiveTab: (t: string) => void, userRole?: string }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -55,10 +55,14 @@ export function AdminLayout({ children, activeTab, setActiveTab }: { children: R
           <FileText size={16} /> Blogs
         </Button>
 
-        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 mt-4 px-2">Access</span>
-        <Button variant={activeTab === 'members' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'members' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('members')}>
-          <Users size={16} /> Members
-        </Button>
+        {userRole === 'Super Admin' && (
+          <>
+            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 mt-4 px-2">Access</span>
+            <Button variant={activeTab === 'members' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'members' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('members')}>
+              <Users size={16} /> Members
+            </Button>
+          </>
+        )}
 
         <div className="mt-auto flex flex-col gap-2">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-2">System</span>

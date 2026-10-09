@@ -13,6 +13,7 @@ export const Route = createFileRoute('/admincontrol108')({
 
 function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('blogs');
 
@@ -28,8 +29,10 @@ function AdminDashboard() {
           await signOut(auth);
           alert("Your account has been suspended by the Super Admin.");
           setUser(null);
+          setUserProfile(null);
         } else {
           setUser(currentUser);
+          setUserProfile(profile || { role: 'Super Admin' }); // Fallback for the first auto-heal load
         }
       } else {
         setUser(null);
@@ -47,10 +50,15 @@ function AdminDashboard() {
     return <AdminLogin />;
   }
 
+  // Enforce access control if a non-super-admin tries to bypass to members tab
+  if (activeTab === 'members' && userProfile?.role !== 'Super Admin') {
+    setActiveTab('blogs');
+  }
+
   return (
-    <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+    <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab} userRole={userProfile?.role}>
       {activeTab === 'blogs' && <AdminBlogs />}
-      {activeTab === 'members' && <AdminMembers />}
+      {activeTab === 'members' && userProfile?.role === 'Super Admin' && <AdminMembers />}
     </AdminLayout>
   );
 }
