@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import { ArrowUpRight, Search, MoveRight } from 'lucide-react';
+import { ArrowUpRight, Search, MoveRight, Filter } from 'lucide-react';
 import { PageIntro } from '@/components/site-shell';
 import { Button } from '@/components/ui/button';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { pageHead } from '@/lib/site-data';
 import { getBlogs } from '@/lib/firebase-db';
 
@@ -30,6 +31,9 @@ function Blog() {
   
   // Sort by date (newest first)
   const sortedArticles = [...articles].sort((a: any, b: any) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  
+  // Extract unique categories dynamically
+  const categories = ['All', ...Array.from(new Set(sortedArticles.map((a: any) => a.category).filter(Boolean)))];
   
   // Find the explicitly featured article, or default to the latest one
   const featuredStory = sortedArticles.find((a: any) => a.isFeatured) || sortedArticles[0];
@@ -63,11 +67,25 @@ function Blog() {
           </button>
         </div>
       )}
-      <div className="filter-bar" style={{ justifyContent: 'flex-end' }}>
-        <label className="search-input">
+      <div className="filter-bar sticky z-40 bg-background top-[96px] max-[800px]:top-[78px] max-[600px]:top-[74px] w-full flex flex-row gap-3" style={{ justifyContent: 'flex-end' }}>
+        <label className="search-input flex-1 sm:flex-none sm:w-[350px] w-full m-0">
           <Search size={17}/>
-          <input aria-label="Search stories" placeholder="Search stories" value={query} onChange={e=>setQuery(e.target.value)}/>
+          <input className="w-full bg-transparent outline-none border-none" aria-label="Search stories" placeholder="Search stories" value={query} onChange={e=>setQuery(e.target.value)} />
         </label>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" size="icon" className="h-[40px] w-[40px] border-border hover:bg-muted shrink-0">
+              <Filter size={16} />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-[200px] z-[100] border border-border shadow-md">
+            {categories.map((c: any) => (
+              <DropdownMenuItem key={c} onClick={() => setFilter(c === 'All' ? 'All stories' : c)} className="cursor-pointer text-sm py-2">
+                {c === 'All' ? 'All categories' : c}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="article-grid">
         {visible.map((a: any) => (
