@@ -2,6 +2,8 @@ import { createFileRoute, Link, notFound } from '@tanstack/react-router';
 import { ArrowLeft, ArrowUpRight } from 'lucide-react';
 import { pageHead } from '@/lib/site-data';
 import { getBlogBySlug } from '@/lib/firebase-db';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 export const Route = createFileRoute('/blog/$slug')({ 
   loader: async ({params}) => {
@@ -12,51 +14,15 @@ export const Route = createFileRoute('/blog/$slug')({
   head: ({loaderData}) => pageHead(loaderData?.title ?? 'Story unavailable', loaderData?.intro ?? 'This journal story could not be found.'), 
   component: Article 
 });
-function parseInline(text: string) {
-  const boldParts = text.split(/(\*\*.*?\*\*)/g);
-  return boldParts.map((bPart, bIdx) => {
-    if (bPart.startsWith('**') && bPart.endsWith('**')) {
-      return <strong key={bIdx} className="text-primary font-bold">{bPart.slice(2, -2)}</strong>;
-    }
-    
-    const italicParts = bPart.split(/(_.*?_)/g);
-    if (italicParts.length === 1) return bPart;
-    
-    return italicParts.map((iPart, iIdx) => {
-       if (iPart.startsWith('_') && iPart.endsWith('_')) {
-         return <em key={`${bIdx}-${iIdx}`} className="italic">{iPart.slice(1, -1)}</em>;
-       }
-       return iPart;
-    });
-  });
-}
-
-function renderContent(p: string, i: number) {
-  if (p.startsWith('## ')) {
-    return <h2 key={i} className="text-primary font-bold text-2xl sm:text-3xl mt-12 mb-6">{parseInline(p.replace('## ', ''))}</h2>;
-  }
-  if (p.startsWith('> ')) {
-    return (
-      <blockquote key={i} className="bg-primary/10 border-l-4 border-primary p-6 my-8 text-foreground/90 italic rounded-r-xl shadow-sm">
-        {parseInline(p.replace('> ', ''))}
-      </blockquote>
-    );
-  }
-  if (p.startsWith('- ')) {
-    return (
-      <ul key={i} className="list-disc list-outside ml-6 mb-3 space-y-2">
-        <li className="pl-2">{parseInline(p.replace('- ', ''))}</li>
-      </ul>
-    );
-  }
-  return <p key={i} className="mb-6">{parseInline(p)}</p>;
-}
 
 function Article(){
   const article=Route.useLoaderData();
   
   // Backwards compatibility for multiple authors vs single author
   const authorsList = article.authors || [{ name: article.author, role: article.authorRole, image: article.authorImage, bio: article.authorBio }];
+
+  // Join paragraphs back into a single markdown string
+  const markdownContent = article.paragraphs?.join('\n\n') || '';
 
   return <article className="site-container article-detail">
     <Link to="/blog" className="text-link"><ArrowLeft size={17}/> Back to the journal</Link>
@@ -67,7 +33,26 @@ function Article(){
     </div>
     <img className="article-cover" src={article.image} alt={article.title} width={1200} height={800}/>
     <div className="article-prose">
-      {article.paragraphs.map((p,i)=> renderContent(p, i))}
+      <ReactMarkdown 
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h2: ({node, ...props}) => <h2 className="text-primary font-bold text-2xl sm:text-3xl mt-12 mb-6" {...props} />,
+          h3: ({node, ...props}) => <h3 className="text-primary font-bold text-xl sm:text-2xl mt-8 mb-4" {...props} />,
+          p: ({node, ...props}) => <p className="mb-6 last:mb-0" {...props} />,
+          blockquote: ({node, ...props}) => <blockquote className="bg-primary/10 border-l-4 border-primary p-6 my-8 text-foreground/90 italic rounded-r-xl shadow-sm [&>p:last-child]:mb-0 [&>ul:last-child]:mb-0" {...props} />,
+          ul: ({node, ...props}) => <ul className="list-disc list-outside ml-6 mb-6 space-y-2 last:mb-0" {...props} />,
+          ol: ({node, ...props}) => <ol className="list-decimal list-outside ml-6 mb-6 space-y-2 last:mb-0" {...props} />,
+          li: ({node, ...props}) => <li className="pl-2" {...props} />,
+          strong: ({node, ...props}) => <strong className="text-primary font-bold" {...props} />,
+          table: ({node, ...props}) => <div className="overflow-x-auto mb-8"><table className="w-full text-left text-sm border-collapse" {...props} /></div>,
+          thead: ({node, ...props}) => <thead className="bg-muted/50 border-b border-border" {...props} />,
+          th: ({node, ...props}) => <th className="p-4 px-6 font-semibold border-b border-border" {...props} />,
+          td: ({node, ...props}) => <td className="p-4 px-6 border-b border-border" {...props} />,
+          a: ({node, ...props}) => <a className="text-primary underline hover:text-primary/80" {...props} />
+        }}
+      >
+        {markdownContent}
+      </ReactMarkdown>
       
       {/* Authors Section */}
       <div className="mt-16 pt-8 border-t border-border/50 flex flex-col gap-8">
