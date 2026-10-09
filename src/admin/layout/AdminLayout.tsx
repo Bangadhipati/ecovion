@@ -7,8 +7,13 @@ import { auth } from '@/lib/firebase';
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  const handleLogout = () => {
-    signOut(auth);
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+    } catch (error) {
+      console.error("Logout Error:", error);
+      alert("Failed to log out");
+    }
   };
 
   return (
