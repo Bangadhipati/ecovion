@@ -15,7 +15,9 @@ import { Route as Admincontrol108RouteImport } from './routes/admincontrol108'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ForFarmersRouteImport } from './routes/for-farmers'
 import { Route as FutureProductsRouteImport } from './routes/future-products'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as TechnologyRouteImport } from './routes/technology'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as BlogIndexRouteImport } from './routes/blog.index'
 import { Route as BlogSlugRouteImport } from './routes/blog.$slug'
 
@@ -49,9 +51,19 @@ const FutureProductsRoute = FutureProductsRouteImport.update({
   path: '/future-products',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TechnologyRoute = TechnologyRouteImport.update({
   id: '/technology',
   path: '/technology',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlogIndexRoute = BlogIndexRouteImport.update({
@@ -72,7 +84,9 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/for-farmers': typeof ForFarmersRoute
   '/future-products': typeof FutureProductsRoute
+  '/privacy': typeof PrivacyRoute
   '/technology': typeof TechnologyRoute
+  '/terms': typeof TermsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/blog/': typeof BlogIndexRoute
 }
@@ -83,7 +97,9 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/for-farmers': typeof ForFarmersRoute
   '/future-products': typeof FutureProductsRoute
+  '/privacy': typeof PrivacyRoute
   '/technology': typeof TechnologyRoute
+  '/terms': typeof TermsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/blog': typeof BlogIndexRoute
 }
@@ -95,7 +111,9 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/for-farmers': typeof ForFarmersRoute
   '/future-products': typeof FutureProductsRoute
+  '/privacy': typeof PrivacyRoute
   '/technology': typeof TechnologyRoute
+  '/terms': typeof TermsRoute
   '/blog/$slug': typeof BlogSlugRoute
   '/blog/': typeof BlogIndexRoute
 }
@@ -108,7 +126,9 @@ export interface FileRouteTypes {
     | '/contact'
     | '/for-farmers'
     | '/future-products'
+    | '/privacy'
     | '/technology'
+    | '/terms'
     | '/blog/$slug'
     | '/blog/'
   fileRoutesByTo: FileRoutesByTo
@@ -119,7 +139,9 @@ export interface FileRouteTypes {
     | '/contact'
     | '/for-farmers'
     | '/future-products'
+    | '/privacy'
     | '/technology'
+    | '/terms'
     | '/blog/$slug'
     | '/blog'
   id:
@@ -130,7 +152,9 @@ export interface FileRouteTypes {
     | '/contact'
     | '/for-farmers'
     | '/future-products'
+    | '/privacy'
     | '/technology'
+    | '/terms'
     | '/blog/$slug'
     | '/blog/'
   fileRoutesById: FileRoutesById
@@ -142,7 +166,9 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   ForFarmersRoute: typeof ForFarmersRoute
   FutureProductsRoute: typeof FutureProductsRoute
+  PrivacyRoute: typeof PrivacyRoute
   TechnologyRoute: typeof TechnologyRoute
+  TermsRoute: typeof TermsRoute
   BlogSlugRoute: typeof BlogSlugRoute
   BlogIndexRoute: typeof BlogIndexRoute
 }
@@ -191,11 +217,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FutureProductsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/technology': {
       id: '/technology'
       path: '/technology'
       fullPath: '/technology'
       preLoaderRoute: typeof TechnologyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blog/': {
@@ -222,7 +262,9 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   ForFarmersRoute: ForFarmersRoute,
   FutureProductsRoute: FutureProductsRoute,
+  PrivacyRoute: PrivacyRoute,
   TechnologyRoute: TechnologyRoute,
+  TermsRoute: TermsRoute,
   BlogSlugRoute: BlogSlugRoute,
   BlogIndexRoute: BlogIndexRoute,
 }
