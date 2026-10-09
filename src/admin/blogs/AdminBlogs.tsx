@@ -10,6 +10,8 @@ export function AdminBlogs() {
   const [editingBlog, setEditingBlog] = useState<any>(null);
   const [authors, setAuthors] = useState<any[]>([{ name: '', role: '', bio: '', image: '' }]);
   const [isLoading, setIsLoading] = useState(true);
+  const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [uploadSuccessId, setUploadSuccessId] = useState<string | null>(null);
 
   const fetchBlogs = async () => {
     setIsLoading(true);
@@ -42,15 +44,17 @@ export function AdminBlogs() {
     setAuthors(newAuthors);
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, setter: (url: string) => void, id: string) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME; 
     const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
 
+    setUploadingId(id);
+    setUploadSuccessId(null);
+
     try {
-      // Optional: show some loading state here
       const formData = new FormData();
       formData.append('file', file);
       formData.append('upload_preset', UPLOAD_PRESET);
@@ -66,12 +70,16 @@ export function AdminBlogs() {
         const urlParts = data.secure_url.split('/upload/');
         const compressedUrl = `${urlParts[0]}/upload/q_auto,f_auto/${urlParts[1]}`;
         setter(compressedUrl);
+        setUploadSuccessId(id);
+        setTimeout(() => setUploadSuccessId(null), 3000);
       } else {
         alert("Upload failed. Check Cloudinary settings.");
       }
     } catch (err) {
       console.error(err);
       alert("Error uploading image.");
+    } finally {
+      setUploadingId(null);
     }
   };
 
@@ -193,8 +201,14 @@ export function AdminBlogs() {
                   <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => {
                     const el = document.getElementById('blog-image-input') as HTMLInputElement;
                     if(el) el.value = url;
-                  })} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                  <Button type="button" variant="secondary" className="h-10 pointer-events-none">Upload Local</Button>
+                  }, 'main-blog-image')} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" disabled={uploadingId === 'main-blog-image'} />
+                  <Button type="button" variant="secondary" className="h-10 pointer-events-none min-w-[120px]">
+                    {uploadingId === 'main-blog-image' ? (
+                      <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"/> Uploading...</span>
+                    ) : uploadSuccessId === 'main-blog-image' ? (
+                      <span className="flex items-center gap-1 text-green-600 dark:text-green-500">✓ Uploaded</span>
+                    ) : 'Upload Local'}
+                  </Button>
                 </div>
               </div>
             </div>
@@ -294,8 +308,14 @@ export function AdminBlogs() {
                         <div className="flex-1 flex gap-2">
                           <input type="text" className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" value={author.image} onChange={(e) => updateAuthor(index, 'image', e.target.value)} required placeholder="URL will appear here after upload..." />
                           <div className="relative shrink-0">
-                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => updateAuthor(index, 'image', url))} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
-                            <Button type="button" variant="secondary" size="sm" className="h-9 pointer-events-none">Upload Local</Button>
+                            <input type="file" accept="image/*" onChange={(e) => handleImageUpload(e, (url) => updateAuthor(index, 'image', url), `author-image-${index}`)} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed" disabled={uploadingId === `author-image-${index}`} />
+                            <Button type="button" variant="secondary" size="sm" className="h-9 pointer-events-none min-w-[120px]">
+                              {uploadingId === `author-image-${index}` ? (
+                                <span className="flex items-center gap-2"><div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"/> Uploading...</span>
+                              ) : uploadSuccessId === `author-image-${index}` ? (
+                                <span className="flex items-center gap-1 text-green-600 dark:text-green-500">✓ Uploaded</span>
+                              ) : 'Upload Local'}
+                            </Button>
                           </div>
                         </div>
                       </div>
