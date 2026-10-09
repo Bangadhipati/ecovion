@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as Admincontrol108RouteImport } from './routes/admincontrol108'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as ForFarmersRouteImport } from './routes/for-farmers'
 import { Route as FutureProductsRouteImport } from './routes/future-products'
@@ -26,6 +27,11 @@ const IndexRoute = IndexRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Admincontrol108Route = Admincontrol108RouteImport.update({
+  id: '/admincontrol108',
+  path: '/admincontrol108',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ContactRoute = ContactRouteImport.update({
@@ -62,6 +68,7 @@ const BlogSlugRoute = BlogSlugRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admincontrol108': typeof Admincontrol108Route
   '/contact': typeof ContactRoute
   '/for-farmers': typeof ForFarmersRoute
   '/future-products': typeof FutureProductsRoute
@@ -72,6 +79,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admincontrol108': typeof Admincontrol108Route
   '/contact': typeof ContactRoute
   '/for-farmers': typeof ForFarmersRoute
   '/future-products': typeof FutureProductsRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
+  '/admincontrol108': typeof Admincontrol108Route
   '/contact': typeof ContactRoute
   '/for-farmers': typeof ForFarmersRoute
   '/future-products': typeof FutureProductsRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/about'
+    | '/admincontrol108'
     | '/contact'
     | '/for-farmers'
     | '/future-products'
@@ -105,6 +115,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/about'
+    | '/admincontrol108'
     | '/contact'
     | '/for-farmers'
     | '/future-products'
@@ -115,6 +126,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/about'
+    | '/admincontrol108'
     | '/contact'
     | '/for-farmers'
     | '/future-products'
@@ -126,6 +138,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
+  Admincontrol108Route: typeof Admincontrol108Route
   ContactRoute: typeof ContactRoute
   ForFarmersRoute: typeof ForFarmersRoute
   FutureProductsRoute: typeof FutureProductsRoute
@@ -148,6 +161,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admincontrol108': {
+      id: '/admincontrol108'
+      path: '/admincontrol108'
+      fullPath: '/admincontrol108'
+      preLoaderRoute: typeof Admincontrol108RouteImport
       parentRoute: typeof rootRouteImport
     }
     '/contact': {
@@ -198,6 +218,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
+  Admincontrol108Route: Admincontrol108Route,
   ContactRoute: ContactRoute,
   ForFarmersRoute: ForFarmersRoute,
   FutureProductsRoute: FutureProductsRoute,

@@ -73,15 +73,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+import { useLocation } from "@tanstack/react-router";
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const location = useLocation();
+  const isAdmin = location.pathname.startsWith('/admincontrol108');
 
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Header />
+      {!isAdmin && <Header />}
       <main><Outlet /></main>
-      <Footer />
+      {!isAdmin && <Footer />}
     </QueryClientProvider>
   );
 }
