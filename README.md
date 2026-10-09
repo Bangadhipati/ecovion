@@ -1,6 +1,6 @@
 # Ecovion 🌿
 
-Ecovion is a modern, responsive web application focused on showcasing smart material systems for sustainable agriculture and environmental innovation. This project represents a complete frontend redesign to provide a beautiful, seamless experience for visitors.
+Ecovion is a modern, responsive web application focused on showcasing smart material systems for sustainable agriculture and environmental innovation. This project represents a complete frontend redesign to provide a beautiful, seamless experience for visitors, built as part of an internship project.
 
 ## Key Features
 
@@ -49,4 +49,4 @@ To run this project locally on your machine, you'll need [Node.js](https://nodej
 
 ## Development Credits
 
-Designed and Developed by **Debarghya Bhowmick**.
+Designed and Developed by **Debarghya Bhowmick** as part of an internship project.
