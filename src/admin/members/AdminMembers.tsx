@@ -46,9 +46,9 @@ export function AdminMembers() {
       if (adminDocs.length === 0) {
         creationLock.current = true;
         await createMember({
-          name: currentUser.displayName || 'Super Admin',
+          name: currentUser.displayName || 'Admin',
           email: currentUser.email,
-          role: 'Super Admin',
+          role: 'Admin',
           status: 'active',
           createdAt: new Date().toISOString()
         });

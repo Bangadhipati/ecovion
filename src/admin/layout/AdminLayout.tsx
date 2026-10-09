@@ -55,7 +55,7 @@ export function AdminLayout({ children, activeTab, setActiveTab, userRole }: { c
           <FileText size={16} /> Blogs
         </Button>
 
-        {userRole === 'Super Admin' && (
+        {userRole === 'Admin' && (
           <>
             <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 mt-4 px-2">Access</span>
             <Button variant={activeTab === 'members' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'members' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('members')}>

@@ -27,12 +27,12 @@ function AdminDashboard() {
         
         if (profile && profile.status === 'suspended') {
           await signOut(auth);
-          alert("Your account has been suspended by the Super Admin.");
+          alert("Your account has been suspended by the Admin.");
           setUser(null);
           setUserProfile(null);
         } else {
           setUser(currentUser);
-          setUserProfile(profile || { role: 'Super Admin' }); // Fallback for the first auto-heal load
+          setUserProfile(profile || { role: 'Admin' }); // Fallback for the first auto-heal load
         }
       } else {
         setUser(null);
@@ -50,15 +50,15 @@ function AdminDashboard() {
     return <AdminLogin />;
   }
 
-  // Enforce access control if a non-super-admin tries to bypass to members tab
-  if (activeTab === 'members' && userProfile?.role !== 'Super Admin') {
+  // Enforce access control if a non-admin tries to bypass to members tab
+  if (activeTab === 'members' && userProfile?.role !== 'Admin') {
     setActiveTab('blogs');
   }
 
   return (
     <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab} userRole={userProfile?.role}>
       {activeTab === 'blogs' && <AdminBlogs />}
-      {activeTab === 'members' && userProfile?.role === 'Super Admin' && <AdminMembers />}
+      {activeTab === 'members' && userProfile?.role === 'Admin' && <AdminMembers />}
     </AdminLayout>
   );
 }
