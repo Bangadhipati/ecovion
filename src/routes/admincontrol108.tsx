@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { AdminLayout } from '@/admin/layout/AdminLayout';
 import { AdminBlogs } from '@/admin/blogs/AdminBlogs';
+import { AdminMembers } from '@/admin/members/AdminMembers';
 import { AdminLogin } from '@/admin/auth/AdminLogin';
 
 export const Route = createFileRoute('/admincontrol108')({
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/admincontrol108')({
 function AdminDashboard() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('blogs');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -31,8 +33,9 @@ function AdminDashboard() {
   }
 
   return (
-    <AdminLayout>
-      <AdminBlogs />
+    <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      {activeTab === 'blogs' && <AdminBlogs />}
+      {activeTab === 'members' && <AdminMembers />}
     </AdminLayout>
   );
 }

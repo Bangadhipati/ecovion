@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { LayoutDashboard, FileText, LogOut, MoreVertical } from 'lucide-react';
+import { LayoutDashboard, FileText, LogOut, MoreVertical, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
-export function AdminLayout({ children }: { children: React.ReactNode }) {
+export function AdminLayout({ children, activeTab, setActiveTab }: { children: React.ReactNode, activeTab: string, setActiveTab: (t: string) => void }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const handleLogout = async () => {
@@ -14,6 +14,11 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       console.error("Logout Error:", error);
       alert("Failed to log out");
     }
+  };
+
+  const navTo = (tab: string) => {
+    setActiveTab(tab);
+    setIsMobileOpen(false);
   };
 
   return (
@@ -46,12 +51,18 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </div>
         
         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 mt-4 px-2">Content</span>
-        <Button variant="secondary" className="justify-start gap-3 w-full shadow-sm" onClick={() => setIsMobileOpen(false)}>
+        <Button variant={activeTab === 'blogs' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'blogs' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('blogs')}>
           <FileText size={16} /> Blogs
         </Button>
+
+        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 mt-4 px-2">Access</span>
+        <Button variant={activeTab === 'members' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'members' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('members')}>
+          <Users size={16} /> Members
+        </Button>
+
         <div className="mt-auto flex flex-col gap-2">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-2">System</span>
-          <Button variant="ghost" onClick={handleLogout} className="justify-start gap-3 w-full text-muted-foreground">
+          <Button variant="ghost" onClick={handleLogout} className="justify-start gap-3 w-full text-muted-foreground hover:text-destructive hover:bg-destructive/10">
             <LogOut size={16} /> Logout
           </Button>
         </div>
