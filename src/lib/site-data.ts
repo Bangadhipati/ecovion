@@ -14,6 +14,23 @@ export const products = [
   { id: 'water', name: 'Water remediation materials', category: 'Environment', stage: 'Future application', image: research, description: 'Exploring materials for phosphate and nitrate capture in water.', detail: 'Environmental remediation is a future application area for the Ecovion platform, including exploration of phosphate and nitrate capture. Product names, specifications, and launch dates are not yet announced.' },
   { id: 'biological', name: 'Biological-interface delivery', category: 'Healthcare', stage: 'Future application', image: research, description: 'Future opportunities at the intersection of materials and biological systems.', detail: 'Healthcare is a future application vertical for the materials platform. This is an exploratory area, not an approved medical product or a treatment claim. Specific applications and timelines have not been announced.' },
 ];
-export function pageHead(title: string, description: string) {
-  return { meta: [{ title: `${title} — Ecovion` }, { name: 'description', content: description }, { property: 'og:title', content: `${title} — Ecovion` }, { property: 'og:description', content: description }, { property: 'og:type', content: 'website' }, { name: 'twitter:card', content: 'summary_large_image' }] };
+export function pageHead(title: string, description: string, image?: string) {
+  const meta: any[] = [
+    { title: `${title} | Ecovion` }, 
+    { name: 'description', content: description }, 
+    { property: 'og:title', content: `${title} | Ecovion` }, 
+    { property: 'og:site_name', content: 'Ecovion' },
+    { property: 'og:description', content: description }, 
+    { property: 'og:type', content: 'article' }, 
+    { name: 'twitter:card', content: 'summary_large_image' },
+    { name: 'twitter:title', content: `${title} | Ecovion` },
+    { name: 'twitter:description', content: description }
+  ];
+
+  if (image) {
+    meta.push({ property: 'og:image', content: image });
+    meta.push({ name: 'twitter:image', content: image });
+  }
+
+  return { meta };
 }
