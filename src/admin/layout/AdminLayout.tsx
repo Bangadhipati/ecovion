@@ -1,9 +1,15 @@
 import { useState } from 'react';
 import { LayoutDashboard, FileText, LogOut, MoreVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { signOut } from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const handleLogout = () => {
+    signOut(auth);
+  };
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-muted/30 font-sans text-foreground">
@@ -40,7 +46,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </Button>
         <div className="mt-auto flex flex-col gap-2">
           <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 px-2">System</span>
-          <Button variant="ghost" className="justify-start gap-3 w-full text-muted-foreground">
+          <Button variant="ghost" onClick={handleLogout} className="justify-start gap-3 w-full text-muted-foreground">
             <LogOut size={16} /> Logout
           </Button>
         </div>
