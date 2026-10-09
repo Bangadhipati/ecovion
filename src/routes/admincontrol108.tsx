@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { AdminLayout } from '@/admin/layout/AdminLayout';
 import { AdminBlogs } from '@/admin/blogs/AdminBlogs';
@@ -17,8 +17,23 @@ function AdminDashboard() {
   const [activeTab, setActiveTab] = useState('blogs');
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        // Enforce suspension check
+        const { getMembers } = await import('@/lib/firebase-db');
+        const membersList = await getMembers();
+        const profile = membersList.find(m => m.email === currentUser.email);
+        
+        if (profile && profile.status === 'suspended') {
+          await signOut(auth);
+          alert("Your account has been suspended by the Super Admin.");
+          setUser(null);
+        } else {
+          setUser(currentUser);
+        }
+      } else {
+        setUser(null);
+      }
       setLoading(false);
     });
     return () => unsubscribe();

@@ -49,6 +49,10 @@ export async function createMember(data: any) {
   return await addDoc(collection(db, 'members'), data);
 }
 
+export async function updateMember(id: string, data: any) {
+  return await updateDoc(doc(db, 'members', id), data);
+}
+
 export async function deleteMember(id: string) {
   return await deleteDoc(doc(db, 'members', id));
 }

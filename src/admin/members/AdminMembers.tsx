@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Trash2, Users } from 'lucide-react';
+import { Plus, Trash2, Users, Edit, Ban, CheckCircle } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { getMembers, createMember, deleteMember as dbDeleteMember } from '@/lib/firebase-db';
+import { getMembers, createMember, updateMember, deleteMember as dbDeleteMember } from '@/lib/firebase-db';
 import { initializeApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 
@@ -27,9 +27,12 @@ try {
 export function AdminMembers() {
   const [members, setMembers] = useState<any[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
+  
+  const creationLock = useRef(false);
 
   const fetchMembers = async () => {
     setIsLoading(true);
@@ -37,16 +40,24 @@ export function AdminMembers() {
     
     // Auto-heal: If the current logged-in admin is not in the database, add them
     const currentUser = getAuth().currentUser;
-    if (currentUser && currentUser.email) {
-      const adminExists = data.some(m => m.email === currentUser.email);
-      if (!adminExists) {
+    if (currentUser && currentUser.email && !creationLock.current) {
+      const adminDocs = data.filter(m => m.email === currentUser.email);
+      
+      if (adminDocs.length === 0) {
+        creationLock.current = true;
         await createMember({
           name: currentUser.displayName || 'Super Admin',
           email: currentUser.email,
           role: 'Super Admin',
+          status: 'active',
           createdAt: new Date().toISOString()
         });
-        // Refetch after auto-adding
+        data = await getMembers();
+      } else if (adminDocs.length > 1) {
+        // Cleanup duplicates caused by strict mode
+        for (let i = 1; i < adminDocs.length; i++) {
+          await dbDeleteMember(adminDocs[i].id);
+        }
         data = await getMembers();
       }
     }
@@ -59,6 +70,24 @@ export function AdminMembers() {
     fetchMembers();
   }, []);
 
+  const openAddDialog = () => {
+    setEditingMember(null);
+    setError('');
+    setIsDialogOpen(true);
+  };
+
+  const openEditDialog = (member: any) => {
+    setEditingMember(member);
+    setError('');
+    setIsDialogOpen(true);
+  };
+
+  const toggleSuspend = async (member: any) => {
+    const newStatus = member.status === 'suspended' ? 'active' : 'suspended';
+    await updateMember(member.id, { status: newStatus });
+    fetchMembers();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const target = e.target as HTMLFormElement;
@@ -66,32 +95,38 @@ export function AdminMembers() {
     setIsCreating(true);
 
     const name = target.memberName.value;
-    const email = target.memberEmail.value;
-    const password = target.memberPassword.value;
     const role = target.memberRole.value;
 
     try {
-      // 1. Create the user in Firebase Auth using secondary auth
-      if (secondaryAuth) {
-        await createUserWithEmailAndPassword(secondaryAuth, email, password);
-        await signOut(secondaryAuth); // Sign them out of the secondary app
+      if (editingMember) {
+        // Edit flow
+        await updateMember(editingMember.id, { name, role });
       } else {
-        throw new Error("Secondary auth not initialized");
-      }
+        // Create flow
+        const email = target.memberEmail.value;
+        const password = target.memberPassword.value;
+        
+        if (secondaryAuth) {
+          await createUserWithEmailAndPassword(secondaryAuth, email, password);
+          await signOut(secondaryAuth);
+        } else {
+          throw new Error("Secondary auth not initialized");
+        }
 
-      // 2. Save their profile info in Firestore so we can show a list
-      await createMember({
-        name,
-        email,
-        role,
-        createdAt: new Date().toISOString()
-      });
+        await createMember({
+          name,
+          email,
+          role,
+          status: 'active',
+          createdAt: new Date().toISOString()
+        });
+      }
 
       setIsDialogOpen(false);
       fetchMembers();
     } catch (err: any) {
       console.error(err);
-      setError(err.message || "Failed to create user. Email may already be in use.");
+      setError(err.message || "Failed to process request. Email may already be in use.");
     } finally {
       setIsCreating(false);
     }
@@ -111,7 +146,7 @@ export function AdminMembers() {
           <h1 className="text-2xl sm:text-3xl font-bold font-heading mb-2">Manage Members</h1>
           <p className="text-xs sm:text-sm text-muted-foreground">Add dashboard access for your team.</p>
         </div>
-        <Button className="shadow-sm w-full sm:w-auto" onClick={() => setIsDialogOpen(true)}>
+        <Button className="shadow-sm w-full sm:w-auto" onClick={openAddDialog}>
           <Plus size={16} className="mr-2" /> Add Member
         </Button>
       </div>
@@ -131,22 +166,28 @@ export function AdminMembers() {
               {isLoading ? (
                 <tr><td colSpan={4} className="p-12 text-center text-muted-foreground">Loading members...</td></tr>
               ) : members.map(m => (
-                <tr key={m.id} className="hover:bg-muted/30 transition-colors group">
+                <tr key={m.id} className={`hover:bg-muted/30 transition-colors group ${m.status === 'suspended' ? 'opacity-50' : ''}`}>
                   <td className="p-4 px-6 font-medium">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">
+                      <div className={`w-8 h-8 rounded-full ${m.status === 'suspended' ? 'bg-destructive/10 text-destructive' : 'bg-primary/10 text-primary'} flex items-center justify-center font-bold shrink-0`}>
                         {m.name.charAt(0).toUpperCase()}
                       </div>
-                      <span>{m.name}</span>
+                      <span className="truncate">{m.name}</span>
                     </div>
                   </td>
                   <td className="p-4 px-6 text-muted-foreground">{m.email}</td>
                   <td className="p-4 px-6 text-muted-foreground">
-                    <span className="bg-secondary text-primary text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded whitespace-nowrap">
-                      {m.role || 'Admin'}
+                    <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded whitespace-nowrap ${m.status === 'suspended' ? 'bg-destructive/10 text-destructive' : 'bg-secondary text-primary'}`}>
+                      {m.status === 'suspended' ? 'Suspended' : (m.role || 'Admin')}
                     </span>
                   </td>
                   <td className="p-4 px-6 flex gap-2 justify-end">
+                    <Button variant="outline" size="icon" className={`h-8 w-8 shrink-0 ${m.status === 'suspended' ? 'text-primary hover:bg-primary/10' : 'text-amber-600 hover:bg-amber-600/10'}`} onClick={() => toggleSuspend(m)} title={m.status === 'suspended' ? 'Unsuspend' : 'Suspend'}>
+                      {m.status === 'suspended' ? <CheckCircle size={14} /> : <Ban size={14} />}
+                    </Button>
+                    <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" onClick={() => openEditDialog(m)}>
+                      <Edit size={14} />
+                    </Button>
                     <Button variant="outline" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10 shrink-0" onClick={() => handleDelete(m.id)}>
                       <Trash2 size={14} />
                     </Button>
@@ -167,29 +208,31 @@ export function AdminMembers() {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[450px]">
           <DialogHeader>
-            <DialogTitle>Add New Member</DialogTitle>
+            <DialogTitle>{editingMember ? 'Edit Member' : 'Add New Member'}</DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-2">
             {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
             
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Full Name</label>
-              <input name="memberName" type="text" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" required placeholder="John Doe" />
+              <input name="memberName" type="text" defaultValue={editingMember?.name} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" required placeholder="John Doe" />
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 opacity-50">
               <label className="text-sm font-medium">Email Address</label>
-              <input name="memberEmail" type="email" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" required placeholder="john@ecovion.com" />
+              <input name="memberEmail" type="email" defaultValue={editingMember?.email} disabled={!!editingMember} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none" required placeholder="john@ecovion.com" />
             </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Temporary Password</label>
-              <input name="memberPassword" type="text" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" required minLength={6} placeholder="At least 6 characters" />
-            </div>
+            {!editingMember && (
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-medium">Temporary Password</label>
+                <input name="memberPassword" type="text" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" required minLength={6} placeholder="At least 6 characters" />
+              </div>
+            )}
 
             <div className="flex flex-col gap-2">
               <label className="text-sm font-medium">Role</label>
-              <select name="memberRole" className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <select name="memberRole" defaultValue={editingMember?.role || 'Admin'} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <option value="Admin">Admin</option>
                 <option value="Editor">Editor</option>
               </select>
@@ -197,7 +240,7 @@ export function AdminMembers() {
 
             <DialogFooter className="mt-6">
               <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isCreating}>Cancel</Button>
-              <Button type="submit" disabled={isCreating}>{isCreating ? 'Creating...' : 'Add Member'}</Button>
+              <Button type="submit" disabled={isCreating}>{isCreating ? 'Saving...' : (editingMember ? 'Save Changes' : 'Add Member')}</Button>
             </DialogFooter>
           </form>
         </DialogContent>
