@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, FileText, LogOut, MoreVertical, Users } from 'lucide-react';
+import { LayoutDashboard, FileText, LogOut, MoreVertical, Users, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
@@ -53,6 +53,9 @@ export function AdminLayout({ children, activeTab, setActiveTab, userRole }: { c
         <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 mt-4 px-2">Content</span>
         <Button variant={activeTab === 'blogs' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'blogs' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('blogs')}>
           <FileText size={16} /> Blogs
+        </Button>
+        <Button variant={activeTab === 'enquiries' ? 'secondary' : 'ghost'} className={`justify-start gap-3 w-full ${activeTab === 'enquiries' ? 'shadow-sm' : 'text-muted-foreground'}`} onClick={() => navTo('enquiries')}>
+          <MessageSquare size={16} /> Enquiries
         </Button>
 
         {userRole === 'Admin' && (

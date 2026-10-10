@@ -5,6 +5,7 @@ import { auth } from '@/lib/firebase';
 import { AdminLayout } from '@/admin/layout/AdminLayout';
 import { AdminBlogs } from '@/admin/blogs/AdminBlogs';
 import { AdminMembers } from '@/admin/members/AdminMembers';
+import { AdminEnquiries } from '@/admin/enquiries/AdminEnquiries';
 import { AdminLogin } from '@/admin/auth/AdminLogin';
 import { SystemMaintenance } from '@/admin/auth/SystemMaintenance';
 
@@ -69,6 +70,7 @@ function AdminDashboard() {
     <AdminLayout activeTab={activeTab} setActiveTab={setActiveTab} userRole={userProfile?.role}>
       {activeTab === 'blogs' && <AdminBlogs />}
       {activeTab === 'members' && userProfile?.role === 'Admin' && <AdminMembers />}
+      {activeTab === 'enquiries' && <AdminEnquiries />}
     </AdminLayout>
   );
 }

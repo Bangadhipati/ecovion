@@ -56,3 +56,24 @@ export async function updateMember(id: string, data: any) {
 export async function deleteMember(id: string) {
   return await deleteDoc(doc(db, 'members', id));
 }
+
+export async function getEnquiries() {
+  try {
+    const snapshot = await getDocs(collection(db, 'enquiries'));
+    return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch (error) {
+    console.error("Error fetching enquiries:", error);
+    return [];
+  }
+}
+
+export async function createEnquiry(data: any) {
+  return await addDoc(collection(db, 'enquiries'), {
+    ...data,
+    createdAt: new Date().toISOString()
+  });
+}
+
+export async function deleteEnquiry(id: string) {
+  return await deleteDoc(doc(db, 'enquiries', id));
+}
